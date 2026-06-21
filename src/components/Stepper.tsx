@@ -19,6 +19,7 @@ export function Stepper({ step, setStep, specGenerated }: StepperProps) {
             key={label}
             className={`step ${active ? 'active' : ''} ${done ? 'done' : ''}`}
             onClick={() => setStep(n)}
+            aria-current={active ? 'step' : undefined}
           >
             <span className="step-number">{done ? <Icon name="check" size={14} /> : n}</span>
             <span>{label}</span>
