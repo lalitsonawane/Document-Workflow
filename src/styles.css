@@ -1,7 +1,6 @@
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@600;700&display=swap');
 :root {
   font-family: 'DM Sans', Arial, sans-serif;
-  color: #101b3c;
+  color: var(--navy);
   background: #fff;
   font-synthesis: none;
   --blue: #1254d9;
@@ -10,6 +9,20 @@
   --border: #dbe0e9;
   --soft: #f5f8fc;
   --pale: #f2f7ff;
+  --green: #17a467;
+  --slate: #263454;
+  --input-border: #cfd6e2;
+  --input-color: #182442;
+  --border-soft: #e4e8ef;
+  --panel: #fcfdff;
+  --hover-bg: #f8faff;
+  --border-hover: #9aa9c3;
+  --body: #33405a;
+  --canvas: #f3f5f8;
+  --success-bg: #ecfdf3;
+  --success-border: #a7f3d0;
+  --success: #065f46;
+  --track: #dde5f1;
 }
 * {
   box-sizing: border-box;
@@ -57,7 +70,7 @@ button {
   align-items: center;
   gap: 12px;
   margin-left: 56px;
-  color: #6d7890;
+  color: var(--muted);
   font-size: 13px;
 }
 .header-context i {
@@ -88,12 +101,16 @@ button {
 .text-button {
   border: 1px solid var(--border);
   background: #fff;
-  color: #263454;
+  color: var(--slate);
+}
+.text-button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
 }
 .text-button:hover,
 .secondary-button:hover {
-  border-color: #9aa9c3;
-  background: #f8faff;
+  border-color: var(--border-hover);
+  background: var(--hover-bg);
 }
 .workspace {
   display: grid;
@@ -103,7 +120,7 @@ button {
 .stepper {
   padding: 42px 24px;
   border-right: 1px solid var(--border);
-  background: #fcfdff;
+  background: var(--panel);
 }
 .step {
   position: relative;
@@ -114,7 +131,7 @@ button {
   height: 78px;
   border: 0;
   background: transparent;
-  color: #62708a;
+  color: var(--muted);
   text-align: left;
   font-size: 14px;
   padding: 0;
@@ -153,8 +170,8 @@ button {
 }
 .step.done .step-number {
   color: #fff;
-  background: #17a467;
-  border-color: #17a467;
+  background: var(--green);
+  border-color: var(--green);
 }
 .page-content {
   max-width: 1010px;
@@ -230,10 +247,10 @@ button {
 .story-row textarea,
 .scope-field textarea {
   width: 100%;
-  border: 1px solid #cfd6e2;
+  border: 1px solid var(--input-border);
   border-radius: 6px;
   background: #fff;
-  color: #182442;
+  color: var(--input-color);
   outline: 0;
   transition: 0.15s;
 }
@@ -261,7 +278,7 @@ button {
   gap: 16px 20px;
   padding: 20px;
   background: var(--soft);
-  border: 1px solid #e4e8ef;
+  border: 1px solid var(--border-soft);
   border-radius: 8px;
 }
 .large-textarea {
@@ -274,7 +291,7 @@ button {
 }
 .story-count {
   margin-left: auto !important;
-  color: #68758d !important;
+  color: var(--muted) !important;
   background: #f2f4f8;
   padding: 5px 9px !important;
   border-radius: 4px;
@@ -285,7 +302,7 @@ button {
   gap: 9px;
   align-items: end;
   padding: 13px 0;
-  border-bottom: 1px solid #e4e8ef;
+  border-bottom: 1px solid var(--border-soft);
 }
 .story-row label {
   display: flex;
@@ -370,7 +387,7 @@ button {
   width: 142px;
   height: 142px;
   margin: 25px auto;
-  background: conic-gradient(var(--blue) var(--progress), #dde5f1 0);
+  background: conic-gradient(var(--blue) var(--progress), var(--track) 0);
   border-radius: 50%;
   padding: 9px;
 }
@@ -400,7 +417,7 @@ button {
   padding: 14px 0;
   border-bottom: 1px solid #d7dfeb;
   font-size: 12px;
-  color: #69758c;
+  color: var(--muted);
 }
 .checklist > div > span {
   width: 19px;
@@ -415,8 +432,8 @@ button {
   color: #22314f;
 }
 .checklist .checked > span {
-  background: #17a467;
-  border-color: #17a467;
+  background: var(--green);
+  border-color: var(--green);
   color: white;
 }
 .generate-button {
@@ -426,7 +443,7 @@ button {
 }
 .aside-help {
   text-align: center;
-  color: #758198;
+  color: var(--muted);
   font-size: 11px;
   line-height: 1.5;
 }
@@ -504,7 +521,7 @@ button {
   resize: vertical;
 }
 .spec-main {
-  background: #f3f5f8;
+  background: var(--canvas);
 }
 .spec-page {
   padding: 34px 5vw 80px;
@@ -598,7 +615,7 @@ button {
   margin: 18px 0 0 44px;
   font-size: 13px;
   line-height: 1.75;
-  color: #33405a;
+  color: var(--body);
 }
 .section-editor {
   margin: 18px 0 0 44px;
@@ -776,15 +793,15 @@ button {
   max-width: 910px;
   margin: 0 auto 20px;
   padding: 14px 18px;
-  background: #ecfdf3;
-  border: 1px solid #a7f3d0;
+  background: var(--success-bg);
+  border: 1px solid var(--success-border);
   border-radius: 8px;
-  color: #065f46;
+  color: var(--success);
 }
 .completion-banner svg {
   flex-shrink: 0;
   margin-top: 2px;
-  color: #17a467;
+  color: var(--green);
 }
 .completion-banner strong {
   display: block;
@@ -796,13 +813,13 @@ button {
   color: #047857;
 }
 .status-complete {
-  color: #17a467 !important;
+  color: var(--green) !important;
 }
 .progress-ring--complete {
-  background: conic-gradient(#17a467 var(--progress), #dde5f1 0);
+  background: conic-gradient(var(--green) var(--progress), var(--track) 0);
 }
 .completion-panel .aside-label {
-  color: #17a467;
+  color: var(--green);
 }
 .completion-summary {
   font-size: 12px;

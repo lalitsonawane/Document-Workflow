@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import type { AppState, Updater, SpecData, Section } from './types';
 import { initialData } from './lib/defaults';
 import { buildSections } from './lib/buildSections';
@@ -55,7 +55,11 @@ export function App() {
   };
   const titles = ['Project setup', 'Requirements', 'Review scope', 'Functional spec'];
   const specGenerated = sections.length > 0;
-  const exportDocument = () => exportDoc(data, sections.length ? sections : buildSections(data));
+  const activeSections = useMemo(
+    () => (sections.length ? sections : buildSections(data)),
+    [sections, data],
+  );
+  const exportDocument = () => exportDoc(data, activeSections);
   return (
     <div className="app-shell">
       <header className="topbar">
@@ -75,10 +79,7 @@ export function App() {
             <Icon name="save" />
             {saved ? 'Saved' : 'Save draft'}
           </button>
-          <button
-            className="text-button"
-            onClick={() => (specGenerated ? exportDocument() : generate())}
-          >
+          <button className="text-button" disabled={!specGenerated} onClick={exportDocument}>
             <Icon name="export" />
             Export
           </button>
@@ -93,7 +94,7 @@ export function App() {
           {step === 4 && (
             <Spec
               data={data}
-              sections={sections.length ? sections : buildSections(data)}
+              sections={activeSections}
               setSections={setSections}
               specGenerated={specGenerated}
               onExport={exportDocument}
