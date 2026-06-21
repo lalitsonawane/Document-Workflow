@@ -1,9 +1,21 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import './styles.css';
+import type {
+  IconName,
+  SpecData,
+  Section,
+  Story,
+  AppState,
+  Updater,
+  ReadinessCheck,
+} from './types';
+import { FIELD_LABELS, type FieldKey } from './types';
 
-const Icon = ({ name, size = 18 }) => {
-  const paths = {
+type CSSPropertiesWithVars = React.CSSProperties & Record<string, string>;
+
+const Icon = ({ name, size = 18 }: { name: IconName; size?: number }) => {
+  const paths: Record<IconName, React.ReactNode> = {
     save: (
       <>
         <path d="M5 3h11l3 3v15H5z" />
@@ -76,7 +88,7 @@ const Icon = ({ name, size = 18 }) => {
   );
 };
 
-const initialStories = [
+const initialStories: Story[] = [
   {
     id: 1,
     role: 'Accounts Payable Clerk',
@@ -103,7 +115,7 @@ const initialStories = [
   },
 ];
 
-const initialData = {
+const initialData: SpecData = {
   module: 'Finance (FI)',
   project: 'S/4HANA Finance Transformation',
   title: 'Vendor Invoice Management',
@@ -121,17 +133,21 @@ const initialData = {
   stories: initialStories,
 };
 
-const fieldLabels = {
-  module: 'SAP module',
-  project: 'Project name',
-  title: 'FSD title',
-  process: 'Process area',
-  author: 'Author',
-  version: 'Document version',
-};
+interface FieldProps {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  type?: 'input' | 'select';
+  options?: string[];
+}
 
-function Field({ label, value, onChange, type = 'input', options = [] }) {
-  const props = { value, onChange: (e) => onChange(e.target.value), 'aria-label': label };
+function Field({ label, value, onChange, type = 'input', options = [] }: FieldProps) {
+  const props = {
+    value,
+    onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
+      onChange(e.target.value),
+    'aria-label': label,
+  };
   return (
     <label className="field">
       <span>{label}</span>
@@ -142,13 +158,19 @@ function Field({ label, value, onChange, type = 'input', options = [] }) {
           ))}
         </select>
       ) : (
-        <input {...props} />
+        <input {...(props as React.InputHTMLAttributes<HTMLInputElement>)} />
       )}
     </label>
   );
 }
 
-function Stepper({ step, setStep, specGenerated }) {
+interface StepperProps {
+  step: number;
+  setStep: (n: number) => void;
+  specGenerated: boolean;
+}
+
+function Stepper({ step, setStep, specGenerated }: StepperProps) {
   const steps = ['Project setup', 'Requirements', 'Review scope', 'Functional spec'];
   return (
     <nav className="stepper" aria-label="Workflow steps">
@@ -171,7 +193,14 @@ function Stepper({ step, setStep, specGenerated }) {
   );
 }
 
-function StoryRow({ story, index, update, remove }) {
+interface StoryRowProps {
+  story: Story;
+  index: number;
+  update: (key: keyof Omit<Story, 'id'>, value: string) => void;
+  remove: () => void;
+}
+
+function StoryRow({ story, index, update, remove }: StoryRowProps) {
   return (
     <div className="story-row">
       <span className="story-index">{String(index + 1).padStart(2, '0')}</span>
@@ -202,8 +231,10 @@ function StoryRow({ story, index, update, remove }) {
   );
 }
 
-function Setup({ data, setData }) {
-  const set = (key) => (value) => setData((d) => ({ ...d, [key]: value }));
+type SetData = (updater: Updater<SpecData>) => void;
+
+function Setup({ data, setData }: { data: SpecData; setData: SetData }) {
+  const set = (key: keyof SpecData) => (value: string) => setData((d) => ({ ...d, [key]: value }));
   return (
     <section className="page-content">
       <div className="page-heading">
@@ -246,13 +277,14 @@ function Setup({ data, setData }) {
   );
 }
 
-function Requirements({ data, setData }) {
-  const set = (key) => (value) => setData((d) => ({ ...d, [key]: value }));
-  const updateStory = (id, key, value) =>
+function Requirements({ data, setData }: { data: SpecData; setData: SetData }) {
+  const set = (key: keyof SpecData) => (value: string) => setData((d) => ({ ...d, [key]: value }));
+  const updateStory = (id: number, key: keyof Omit<Story, 'id'>, value: string) =>
     setData((d) => ({
       ...d,
       stories: d.stories.map((s) => (s.id === id ? { ...s, [key]: value } : s)),
     }));
+  const fieldEntries = Object.entries(FIELD_LABELS) as [FieldKey, string][];
   return (
     <section className="page-content requirements-page">
       <div className="page-heading">
@@ -263,8 +295,8 @@ function Requirements({ data, setData }) {
         </p>
       </div>
       <div className="compact-details">
-        {Object.keys(fieldLabels).map((k) => (
-          <Field key={k} label={fieldLabels[k]} value={data[k]} onChange={set(k)} />
+        {fieldEntries.map(([k, label]) => (
+          <Field key={k} label={label} value={data[k]} onChange={set(k)} />
         ))}
       </div>
       <div className="section-block">
@@ -325,9 +357,9 @@ function Requirements({ data, setData }) {
   );
 }
 
-function Review({ data, setData }) {
-  const set = (key) => (value) => setData((d) => ({ ...d, [key]: value }));
-  const items = [
+function Review({ data, setData }: { data: SpecData; setData: SetData }) {
+  const set = (key: keyof SpecData) => (value: string) => setData((d) => ({ ...d, [key]: value }));
+  const items: [string, keyof SpecData][] = [
     ['In scope', 'inScope'],
     ['Out of scope', 'outScope'],
     ['Assumptions', 'assumptions'],
@@ -359,7 +391,7 @@ function Review({ data, setData }) {
           <label className="scope-field" key={key}>
             <span className="scope-number">0{i + 1}</span>
             <h2>{label}</h2>
-            <textarea value={data[key]} onChange={(e) => set(key)(e.target.value)} />
+            <textarea value={data[key] as string} onChange={(e) => set(key)(e.target.value)} />
           </label>
         ))}
       </div>
@@ -367,7 +399,7 @@ function Review({ data, setData }) {
   );
 }
 
-function buildSections(data) {
+function buildSections(data: SpecData): Section[] {
   const storyRows = data.stories
     .map(
       (s, i) =>
@@ -443,8 +475,16 @@ function buildSections(data) {
   ];
 }
 
-function Spec({ data, sections, setSections, specGenerated, onExport }) {
-  const [editing, setEditing] = useState(null);
+interface SpecProps {
+  data: SpecData;
+  sections: Section[];
+  setSections: (updater: Updater<Section[]>) => void;
+  specGenerated: boolean;
+  onExport: () => void;
+}
+
+function Spec({ data, sections, setSections, specGenerated, onExport }: SpecProps) {
+  const [editing, setEditing] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const fullText = sections.map((s) => `${s.number} ${s.title}\n${s.content}`).join('\n\n');
   const copy = async () => {
@@ -558,19 +598,24 @@ function Spec({ data, sections, setSections, specGenerated, onExport }) {
   );
 }
 
-function Readiness({ data, step, generate, specGenerated }) {
-  const checks = [
-    [
-      'Project details completed',
-      ['module', 'project', 'title', 'process', 'author', 'version'].every((k) => data[k].trim()),
-    ],
+interface ReadinessProps {
+  data: SpecData;
+  step: number;
+  generate: () => void;
+  specGenerated: boolean;
+}
+
+function Readiness({ data, step, generate, specGenerated }: ReadinessProps) {
+  const projectFields: FieldKey[] = ['module', 'project', 'title', 'process', 'author', 'version'];
+  const checks: ReadinessCheck[] = [
+    ['Project details completed', projectFields.every((k) => data[k].trim())],
     ['Business requirement defined', data.requirement.trim().length >= 40],
     ['At least 3 user stories', data.stories.length >= 3],
     [
       'Acceptance criteria provided',
       data.stories.length > 0 && data.stories.every((s) => s.criteria.trim()),
     ],
-    ['Scope reviewed', step >= 3 && data.inScope.trim() && data.outScope.trim()],
+    ['Scope reviewed', step >= 3 && !!data.inScope.trim() && !!data.outScope.trim()],
     ['Functional spec generated', specGenerated],
   ];
   const complete = checks.filter((x) => x[1]).length;
@@ -579,7 +624,10 @@ function Readiness({ data, step, generate, specGenerated }) {
     <aside className="readiness">
       <div className="readiness-inner">
         <p className="aside-label">Document readiness</p>
-        <div className="progress-ring" style={{ '--progress': `${percent * 3.6}deg` }}>
+        <div
+          className="progress-ring"
+          style={{ '--progress': `${percent * 3.6}deg` } as CSSPropertiesWithVars}
+        >
           <div>
             <strong>{percent}%</strong>
             <span>Complete</span>
@@ -607,7 +655,14 @@ function Readiness({ data, step, generate, specGenerated }) {
   );
 }
 
-function CompletionPanel({ data, onExport, onPrint, onNewProject }) {
+interface CompletionPanelProps {
+  data: SpecData;
+  onExport: () => void;
+  onPrint: () => void;
+  onNewProject: () => void;
+}
+
+function CompletionPanel({ data, onExport, onPrint, onNewProject }: CompletionPanelProps) {
   const checks = [
     'Project details completed',
     'Business requirement defined',
@@ -620,7 +675,10 @@ function CompletionPanel({ data, onExport, onPrint, onNewProject }) {
     <aside className="readiness completion-panel">
       <div className="readiness-inner">
         <p className="aside-label">Workflow complete</p>
-        <div className="progress-ring progress-ring--complete" style={{ '--progress': '360deg' }}>
+        <div
+          className="progress-ring progress-ring--complete"
+          style={{ '--progress': '360deg' } as CSSPropertiesWithVars}
+        >
           <div>
             <strong>100%</strong>
             <span>Complete</span>
@@ -655,8 +713,8 @@ function CompletionPanel({ data, onExport, onPrint, onNewProject }) {
   );
 }
 
-function exportDoc(data, sections) {
-  const esc = (s) =>
+function exportDoc(data: SpecData, sections: Section[]): void {
+  const esc = (s: string) =>
     s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n/g, '<br>');
   const body = sections
     .map((s) => `<h2>${s.number} ${esc(s.title)}</h2><p>${esc(s.content)}</p>`)
@@ -669,11 +727,11 @@ function exportDoc(data, sections) {
   URL.revokeObjectURL(a.href);
 }
 
-function loadStoredState() {
+function loadStoredState(): AppState {
   try {
     const raw = localStorage.getItem('specflow-draft');
     if (!raw) return { data: initialData, step: 1, sections: [] };
-    const parsed = JSON.parse(raw);
+    const parsed = JSON.parse(raw) as Partial<AppState>;
     return {
       data: {
         ...initialData,
@@ -689,19 +747,19 @@ function loadStoredState() {
 }
 
 function App() {
-  const [state, setState] = useState(loadStoredState);
+  const [state, setState] = useState<AppState>(loadStoredState);
   const { data, step, sections } = state;
-  const setData = (updater) =>
+  const setData = (updater: Updater<SpecData>) =>
     setState((current) => ({
       ...current,
       data: typeof updater === 'function' ? updater(current.data) : updater,
     }));
-  const setStep = (updater) =>
+  const setStep = (updater: Updater<number>) =>
     setState((current) => ({
       ...current,
       step: typeof updater === 'function' ? updater(current.step) : updater,
     }));
-  const setSections = (updater) =>
+  const setSections = (updater: Updater<Section[]>) =>
     setState((current) => ({
       ...current,
       sections: typeof updater === 'function' ? updater(current.sections) : updater,
@@ -811,4 +869,4 @@ function App() {
   );
 }
 
-createRoot(document.getElementById('root')).render(<App />);
+createRoot(document.getElementById('root')!).render(<App />);
