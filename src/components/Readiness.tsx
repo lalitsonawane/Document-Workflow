@@ -1,4 +1,5 @@
-import type { SpecData, ReadinessCheck, FieldKey, CSSPropertiesWithVars } from '../types';
+import type { SpecData, CSSPropertiesWithVars } from '../types';
+import { calculateReadiness, getReadinessPercent } from '../lib/readiness';
 import { Icon } from './Icon';
 
 interface ReadinessProps {
@@ -9,20 +10,8 @@ interface ReadinessProps {
 }
 
 export function Readiness({ data, step, generate, specGenerated }: ReadinessProps) {
-  const projectFields: FieldKey[] = ['module', 'project', 'title', 'process', 'author', 'version'];
-  const checks: ReadinessCheck[] = [
-    ['Project details completed', projectFields.every((k) => data[k].trim())],
-    ['Business requirement defined', data.requirement.trim().length >= 40],
-    ['At least 3 user stories', data.stories.length >= 3],
-    [
-      'Acceptance criteria provided',
-      data.stories.length > 0 && data.stories.every((s) => s.criteria.trim()),
-    ],
-    ['Scope reviewed', step >= 3 && !!data.inScope.trim() && !!data.outScope.trim()],
-    ['Functional spec generated', specGenerated],
-  ];
-  const complete = checks.filter((x) => x[1]).length;
-  const percent = Math.round((complete / checks.length) * 100);
+  const checks = calculateReadiness(data, step, specGenerated);
+  const percent = getReadinessPercent(checks);
   return (
     <aside className="readiness">
       <div className="readiness-inner">

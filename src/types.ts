@@ -34,6 +34,13 @@ export interface AppState {
   sections: Section[];
 }
 
+export interface StoredState {
+  version: number;
+  data: SpecData;
+  step: number;
+  sections: Section[];
+}
+
 export type IconName =
   | 'save'
   | 'export'
@@ -46,7 +53,8 @@ export type IconName =
   | 'chevron'
   | 'edit'
   | 'copy'
-  | 'print';
+  | 'print'
+  | 'grip';
 
 export type FieldType = 'input' | 'select';
 

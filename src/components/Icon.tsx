@@ -56,6 +56,16 @@ export const Icon = ({ name, size = 18 }: { name: IconName; size?: number }) => 
         <rect x="4" y="9" width="16" height="8" rx="2" />
       </>
     ),
+    grip: (
+      <>
+        <circle cx="9" cy="6" r="1.3" />
+        <circle cx="9" cy="12" r="1.3" />
+        <circle cx="9" cy="18" r="1.3" />
+        <circle cx="15" cy="6" r="1.3" />
+        <circle cx="15" cy="12" r="1.3" />
+        <circle cx="15" cy="18" r="1.3" />
+      </>
+    ),
   };
   return (
     <svg

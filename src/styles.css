@@ -630,12 +630,62 @@ button {
 .step-label {
   margin-bottom: 7px;
 }
+.story-actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: 18px;
+}
+.restore-stories {
+  font-size: 12px;
+  height: 38px;
+  padding: 0 12px;
+}
+.story-row.dragging {
+  opacity: 0.4;
+}
+.story-index {
+  cursor: grab;
+}
+.story-index:active {
+  cursor: grabbing;
+}
+.readiness-compact {
+  display: none;
+}
 @media (max-width: 1150px) {
   .workspace {
     grid-template-columns: 190px 1fr;
   }
   .readiness {
     display: none;
+  }
+  .readiness-compact {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 20px;
+    background: var(--pale);
+    border-bottom: 1px solid var(--border);
+    font-size: 13px;
+    color: var(--muted);
+  }
+  .readiness-compact-bar {
+    flex: 1;
+    height: 6px;
+    border-radius: 3px;
+    background: var(--track);
+    overflow: hidden;
+  }
+  .readiness-compact-fill {
+    height: 100%;
+    background: var(--blue);
+    transition: width 0.3s ease;
+  }
+  .readiness-compact span {
+    font-weight: 700;
+    color: var(--navy);
+    white-space: nowrap;
   }
   .bottom-bar {
     right: 0;

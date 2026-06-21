@@ -3,7 +3,9 @@ import type { AppState, Updater, SpecData, Section } from './types';
 import { initialData } from './lib/defaults';
 import { buildSections } from './lib/buildSections';
 import { exportDoc } from './lib/exportDoc';
-import { loadStoredState } from './lib/storage';
+import { loadStoredState, saveState, clearState } from './lib/storage';
+import { canAdvanceStep } from './lib/validation';
+import { calculateReadiness, getReadinessPercent } from './lib/readiness';
 import { Icon } from './components/Icon';
 import { Stepper } from './components/Stepper';
 import { Setup } from './components/Setup';
@@ -33,9 +35,7 @@ export function App() {
     }));
   const [saved, setSaved] = useState(false);
   useEffect(() => {
-    const t = setTimeout(() => {
-      localStorage.setItem('specflow-draft', JSON.stringify({ data, step, sections }));
-    }, 400);
+    const t = setTimeout(() => saveState({ data, step, sections }), 400);
     return () => clearTimeout(t);
   }, [data, step, sections]);
   const generate = () => {
@@ -44,13 +44,13 @@ export function App() {
     setStep(4);
   };
   const save = () => {
-    localStorage.setItem('specflow-draft', JSON.stringify({ data, step, sections }));
+    saveState({ data, step, sections });
     setSaved(true);
     setTimeout(() => setSaved(false), 1400);
   };
   const resetProject = () => {
     if (!window.confirm('Start a new project? Your current draft will be cleared.')) return;
-    localStorage.removeItem('specflow-draft');
+    clearState();
     setState({ data: initialData, step: 1, sections: [] });
   };
   const titles = ['Project setup', 'Requirements', 'Review scope', 'Functional spec'];
@@ -59,6 +59,8 @@ export function App() {
     () => (sections.length ? sections : buildSections(data)),
     [sections, data],
   );
+  const canAdvance = canAdvanceStep(data, step);
+  const compactPercent = getReadinessPercent(calculateReadiness(data, step, specGenerated));
   const exportDocument = () => exportDoc(data, activeSections);
   return (
     <div className="app-shell">
@@ -85,6 +87,14 @@ export function App() {
           </button>
         </div>
       </header>
+      {step < 4 && (
+        <div className="readiness-compact">
+          <span>{compactPercent}%</span>
+          <div className="readiness-compact-bar">
+            <div className="readiness-compact-fill" style={{ width: `${compactPercent}%` }} />
+          </div>
+        </div>
+      )}
       <div className="workspace">
         <Stepper step={step} setStep={setStep} specGenerated={specGenerated} />
         <main className={step === 4 ? 'spec-main' : ''}>
@@ -126,6 +136,7 @@ export function App() {
           </button>
           <button
             className="primary-button"
+            disabled={!canAdvance}
             onClick={() => (step === 3 ? generate() : setStep((s) => s + 1))}
           >
             {step === 3 ? 'Generate specification' : 'Continue'}
