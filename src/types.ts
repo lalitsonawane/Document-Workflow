@@ -54,6 +54,10 @@ export type Updater<T> = T | ((prev: T) => T);
 
 export type ReadinessCheck = [string, boolean];
 
+export type SetData = (updater: Updater<SpecData>) => void;
+
+export type CSSPropertiesWithVars = React.CSSProperties & Record<string, string>;
+
 export const FIELD_LABELS = {
   module: 'SAP module',
   project: 'Project name',
