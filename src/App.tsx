@@ -61,7 +61,7 @@ export function App() {
   );
   const canAdvance = canAdvanceStep(data, step);
   const compactPercent = getReadinessPercent(calculateReadiness(data, step, specGenerated));
-  const exportDocument = () => exportDoc(data, activeSections);
+  const exportDocument = () => void exportDoc(data, activeSections);
   return (
     <div className="app-shell">
       <header className="topbar">
