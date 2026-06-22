@@ -89,3 +89,4 @@ npm run test:watch    # watch mode
 - Use the stepper on the left to jump between completed steps.
 - **Continue** advances through steps 1–3; step 3 generates the specification.
 - The readiness panel tracks completion before generation.
+# Document-Workflow
