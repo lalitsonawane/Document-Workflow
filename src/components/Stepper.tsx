@@ -12,8 +12,8 @@ export function Stepper({ step, setStep, specGenerated }: StepperProps) {
     <nav className="stepper" aria-label="Workflow steps">
       {steps.map((label, i) => {
         const n = i + 1;
-        const done = n < step || (n === 4 && specGenerated);
-        const active = step === n && !done;
+        const done = n < step || (n === 4 && specGenerated && step === 4);
+        const active = step === n && !(n === 4 && specGenerated);
         return (
           <button
             key={label}

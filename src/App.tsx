@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { AppState, Updater, SpecData, Section } from './types';
 import { initialData } from './lib/defaults';
 import { buildSections } from './lib/buildSections';
@@ -34,9 +34,12 @@ export function App() {
       sections: typeof updater === 'function' ? updater(current.sections) : updater,
     }));
   const [saved, setSaved] = useState(false);
+  const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   useEffect(() => {
-    const t = setTimeout(() => saveState({ data, step, sections }), 400);
-    return () => clearTimeout(t);
+    saveTimerRef.current = setTimeout(() => saveState({ data, step, sections }), 400);
+    return () => {
+      if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+    };
   }, [data, step, sections]);
   const generate = () => {
     const built = buildSections(data);
@@ -50,8 +53,12 @@ export function App() {
   };
   const resetProject = () => {
     if (!window.confirm('Start a new project? Your current draft will be cleared.')) return;
+    // Cancel any pending debounced save so it doesn't overwrite the cleared state
+    if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+    const freshState: AppState = { data: initialData, step: 1, sections: [] };
     clearState();
-    setState({ data: initialData, step: 1, sections: [] });
+    saveState(freshState); // immediately persist the blank state
+    setState(freshState);
   };
   const titles = ['Project setup', 'Requirements', 'Review scope', 'Functional spec'];
   const specGenerated = sections.length > 0;
